@@ -30,7 +30,7 @@
 const KEY='group-mixer-v2';
 const ZONES=[['America/Los_Angeles','Pacific'],['America/Denver','Mountain'],['America/Phoenix','Arizona (no DST)'],['America/Chicago','Central'],['America/New_York','Eastern'],['America/Anchorage','Alaska'],['Pacific/Honolulu','Hawaii'],['America/Halifax','Atlantic'],['America/St_Johns','Newfoundland'],['Europe/London','UK / Ireland'],['Europe/Paris','Central Europe'],['Europe/Athens','Eastern Europe'],['Africa/Johannesburg','South Africa'],['Asia/Kolkata','India'],['Asia/Singapore','Singapore'],['Asia/Tokyo','Japan'],['Australia/Perth','Western Australia'],['Australia/Sydney','Sydney'],['Pacific/Auckland','New Zealand']];
 const tzName=tz=>ZONES.find(z=>z[0]===tz)?.[1]||tz||'Not set';
-const genderOptions=(value)=>[['',['woman','Woman'],['man','Man'],['nonbinary','Nonbinary'],['undisclosed','Prefer not to say']].map(([id,name])=>`<option value="${id}" ${id===value?'selected':''}>${name}</option>`).join('');
+const genderOptions=(value)=>[['woman','Woman'],['man','Man'],['nonbinary','Nonbinary'],['undisclosed','Prefer not to say']].map(([id,name])=>`<option value="${id}" ${id===value?'selected':''}>${name}</option>`).join('');
 const groupingOptions=(value)=>[['none','No preference'],['prefer','Prefer same-gender group'],['require','Require same-gender group']].map(([id,name])=>`<option value="${id}" ${id===(value||'none')?'selected':''}>${name}</option>`).join('');
 const tzOptions=(value)=>'<option value="">Not set</option>'+ZONES.map(([id,name])=>`<option value="${id}" ${id===value?'selected':''}>${name}</option>`).join('');
 // Calculate actual UTC offsets at generation time, including daylight saving changes.
