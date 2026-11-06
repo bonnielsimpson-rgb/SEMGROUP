@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SEM Group Mixer</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#283b2c;background:#faf5eb}*{box-sizing:border-box}body{margin:0}main{max-width:1100px;margin:auto;padding:24px}h1{margin:0;font-size:2rem}h2{font-size:1.15rem;margin:0 0 12px}p{color:#5d6879;line-height:1.5}.panel{background:#fffdf8;border:1px solid #e8ddc9;border-radius:14px;padding:20px;margin-top:18px;box-shadow:0 2px 12px #18243b08}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}button,.filelabel{border:0;background:#b9653e;color:white;border-radius:8px;padding:10px 14px;font:inherit;cursor:pointer}button.secondary,.filelabel{background:#e5ebda;color:#35553b}button.danger{background:#fff0f0;color:#a32b35}button:disabled{opacity:.5;cursor:wait}input,select,textarea{font:inherit;border:1px solid #cbd3df;border-radius:8px;padding:9px;width:100%;background:white}textarea{min-height:145px}label{display:block;font-weight:600;font-size:.9rem;margin:10px 0 5px}small{color:#697586}.list{max-height:245px;overflow:auto;margin-top:10px}.person{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #edf0f4;gap:8px}.person button{padding:3px 8px;font-size:.8rem}.rule{padding:7px 0;border-bottom:1px solid #edf0f4;display:flex;justify-content:space-between;gap:8px}.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:12px;margin-top:14px}.group{border:1px solid #dce4f4;border-radius:11px;padding:13px;background:#f7f8ef}.group b{color:#466344}.group div{padding:5px 0}.status{margin-top:12px;font-weight:600}.muted{color:#697586}.stat{display:inline-block;background:#e9eddd;border-radius:6px;padding:5px 8px;margin:4px 5px 4px 0}.hide{display:none!important}footer{margin:25px 0;color:#697586;font-size:.85rem}@media(max-width:700px){.grid{grid-template-columns:1fr}main{padding:14px}}
+.save-banner{background:#e5ebda;border:1px solid #b8c9aa;border-radius:12px;padding:16px 18px;margin-top:18px}.save-banner strong{display:block;font-size:1.1rem;color:#274d31}.save-banner p{margin:6px 0;color:#405445}.save-banner .controls{margin-top:10px}.save-banner button{font-weight:650}.save-banner .note{font-size:.87rem}.save-banner.warning{background:#fff0e7;border-color:#d49c75}.save-banner.warning strong{color:#8e3923}@media print{.save-banner{display:none}}
+.welcome{background:#f0f2e5;border:1px solid #d4dec6;border-radius:14px;padding:18px 20px;margin-top:18px}.welcome h2{color:#35553b;margin:0 0 8px}.welcome p{margin:7px 0}.hint{font-size:.9rem;color:#5b6958;margin:6px 0 12px}.group-help{background:#fff4e9;border-left:4px solid #b9653e;border-radius:6px;padding:11px 14px;margin:12px 0}.group-help p{margin:5px 0}button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #7b9c7e;outline-offset:2px}</style></head><body><main>
+<h1>🌿 SEM Group Mixer</h1><section class="welcome"><h2>Welcome to SEM Group Mixer!</h2><p>This tool helps you organize students into small groups while considering scheduling needs and preferences. Your student information saves automatically. You can leave and return later using this same computer and browser.</p><p><strong>Getting started:</strong> 1. Add students and their time zones → 2. Set group preferences → 3. Create groups → 4. Keep the groups you choose.</p></section>
+<section class="save-banner" id="saveBanner" aria-live="polite"><strong id="saveHeading">✓ Your work is saved automatically</strong><p id="saveDetail">You can close this page and come back later using this same browser and device.</p><div class="controls"><button id="backupTop" type="button">Download a safety backup</button><span class="note" id="saveWhen">Your information stays on this device, not in GitHub.</span></div><p class="note"><strong style="display:inline;font-size:inherit">Important:</strong> If you change computers or browsers, or clear browser data, use your downloaded backup and the “Import backup” option below to restore your work.</p></section>
+<section class="panel"><h2>1. Student roster & time zones</h2><div class="grid"><div><label for="defaultTZ">Step 1: Choose the time zone for the students you are adding</label><select id="defaultTZ"></select><p class="hint">Students in different time zones? Add one set of names, change the time zone, then add the next set. You can also change each student’s time zone on the right.</p><label for="names">Step 2: Enter student names (one per line)</label><textarea id="names" placeholder="Alice&#10;Bob&#10;Carol"></textarea><div class="controls"><button id="addNames">Add names</button><button class="secondary" id="demo">Load example (42 people)</button></div></div><div><div class="controls"><strong id="count">0 people</strong><button class="secondary" id="export">Export backup</button><label class="filelabel" for="import">Import backup</label><input class="hide" id="import" type="file" accept=".json,application/json"></div><div class="list" id="roster"></div></div></div></section>
+<section class="panel"><h2>2. Group preferences</h2><p class="hint">Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones are considered automatically; nearby time zones are preferred, but exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
+<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Try Another Arrangement:</strong> See a different possibility. This does not save or change previous group rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
+<section class="panel"><h2>4. Previous rounds</h2><p>These are the group assignments you chose to keep. Future groups will try to pair different students together. Required “keep apart” rules always take priority.</p><div class="controls"><span id="historyCount"></span><button class="danger" id="clearHistory">Clear history</button></div><div id="history"></div></section>
+<footer>Tip: Export a backup after changes. Browser data can be lost if you clear site data or switch devices. This file works offline.</footer>
+</main><script>
+const KEY='group-mixer-v2';
+const ZONES=[['America/Los_Angeles','Pacific'],['America/Denver','Mountain'],['America/Phoenix','Arizona (no DST)'],['America/Chicago','Central'],['America/New_York','Eastern'],['America/Anchorage','Alaska'],['Pacific/Honolulu','Hawaii'],['America/Halifax','Atlantic'],['America/St_Johns','Newfoundland'],['Europe/London','UK / Ireland'],['Europe/Paris','Central Europe'],['Europe/Athens','Eastern Europe'],['Africa/Johannesburg','South Africa'],['Asia/Kolkata','India'],['Asia/Singapore','Singapore'],['Asia/Tokyo','Japan'],['Australia/Perth','Western Australia'],['Australia/Sydney','Sydney'],['Pacific/Auckland','New Zealand']];
+const tzName=tz=>ZONES.find(z=>z[0]===tz)?.[1]||tz||'Not set';
+const tzOptions=(value)=>'<option value="">Not set</option>'+ZONES.map(([id,name])=>`<option value="${id}" ${id===value?'selected':''}>${name}</option>`).join('');
+// Calculate actual UTC offsets at generation time, including daylight saving changes.
+function utcOffset(tz){try{const parts=new Intl.DateTimeFormat('en-US',{timeZone:tz,timeZoneName:'longOffset'}).formatToParts(new Date());const str=parts.find(x=>x.type==='timeZoneName').value;const m=str.match(/GMT([+-])(\d{2}):(\d{2})/);return m?(m[1]==='-'?-1:1)*(+m[2]+(+m[3]/60)):0}catch(e){return null}}
+const offsetGap=(a,b)=>{if(!a||!b)return 0;const x=utcOffset(a),y=utcOffset(b);if(x===null||y===null)return 0;const d=Math.abs(x-y);return Math.min(d,24-d)};
+
+let state={people:[],rules:[],history:[]},current=null;
+const $=id=>document.getElementById(id);
+const id=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));savedNotice(true)}catch(e){savedNotice(false)}}
+function savedNotice(ok){const banner=$('saveBanner');if(!banner)return;banner.classList.toggle('warning',!ok);$('saveHeading').textContent=ok?'✓ Saved automatically — you can come back later':'⚠ Changes could not be saved';$('saveDetail').textContent=ok?'You can close this page and return using the same browser on this device.':'Your browser may be blocking storage. Download a backup now so you do not lose your work.';$('saveWhen').textContent=ok?'Last saved: '+new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):'Please download a safety backup.'}
+try{const s=JSON.parse(localStorage.getItem(KEY)||localStorage.getItem('group-mixer-v1'));if(s&&Array.isArray(s.people)&&Array.isArray(s.rules)&&Array.isArray(s.history))state=s}catch(e){}
+const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function render(){
+ $('count').textContent=state.people.length+' students';
+ $('defaultTZ').innerHTML=tzOptions($('defaultTZ').value||'America/Los_Angeles');
+ $('roster').innerHTML=state.people.map(p=>`<div class="person"><span>${escapeHTML(p.name)}<select aria-label="Time zone for ${escapeHTML(p.name)}" data-tz="${p.id}" style="margin-top:4px;max-width:230px;font-size:.8rem">${tzOptions(p.tz)}</select></span><button class="danger" data-remove="${p.id}">Remove</button></div>`).join('')||'<p>No names yet.</p>';
+ const opts='<option value="">Select a person</option>'+state.people.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
+ const a=$('a').value,b=$('b').value;$('a').innerHTML=opts;$('b').innerHTML=opts;$('a').value=a;$('b').value=b;
+ const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));
+ $('rules').innerHTML=state.rules.map(r=>`<div class="rule"><span>${escapeHTML(names[r.a]||'?')} + ${escapeHTML(names[r.b]||'?')} — ${r.type==='no'?'🚫 cannot':'★ prefer'}</span><button class="danger" data-rule="${r.id}">×</button></div>`).join('')||'<p>No rules added.</p>';
+ $('historyCount').textContent=state.history.length+' saved rounds';
+ $('history').innerHTML=state.history.slice().reverse().map((h,i)=>`<div class="rule"><span>${escapeHTML(h.date)} — ${h.groups.length} groups</span><button class="secondary" data-history="${state.history.length-1-i}">View</button></div>`).join('');
+}
+function addPeople(names){
+ let added=0;for(let name of names){name=name.trim();if(!name||state.people.some(p=>p.name.toLowerCase()===name.toLowerCase()))continue;state.people.push({id:id(),name,tz:$('defaultTZ').value});added++}
+ persist();render();$('status').textContent=added+' names added.';
+}
+$('addNames').onclick=()=>{addPeople($('names').value.split(/\r?\n/));$('names').value=''};
+$('demo').onclick=()=>{if(state.people.length&&!confirm('Replace existing roster, rules, and history with example data?'))return;state={people:[],rules:[],history:[]};addPeople(Array.from({length:42},(_,i)=>'Person '+String(i+1).padStart(2,'0')));current=null;drawGroups()};
+$('roster').onchange=e=>{const tid=e.target.dataset.tz;if(!tid)return;const p=state.people.find(x=>x.id===tid);if(p){p.tz=e.target.value;persist()}};
+$('roster').onclick=e=>{const rid=e.target.dataset.remove;if(!rid)return;state.people=state.people.filter(p=>p.id!==rid);state.rules=state.rules.filter(r=>r.a!==rid&&r.b!==rid);persist();render();current=null;drawGroups()};
+$('addRule').onclick=()=>{const a=$('a').value,b=$('b').value,type=$('type').value;if(!a||!b||a===b){alert('Choose two different people.');return}state.rules=state.rules.filter(r=>!([r.a,r.b].includes(a)&&[r.a,r.b].includes(b)));state.rules.push({id:id(),a,b,type});persist();render()};
+$('rules').onclick=e=>{const rid=e.target.dataset.rule;if(!rid)return;state.rules=state.rules.filter(r=>r.id!==rid);persist();render()};
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function solve(){
+ const people=state.people,n=people.length,size=Number($('size').value);
+ if(!Number.isInteger(size)||size<2||size>12)throw Error('Choose a group size between 2 and 12.');
+ if(n===0||n%size!==0)throw Error(`You have ${n} people. The roster must divide evenly into groups of ${size}.`);
+ const ids=people.map(p=>p.id),idx=Object.fromEntries(ids.map((x,i)=>[x,i])),N=n;
+ const forbidden=Array.from({length:N},()=>new Set()),preferred=Array.from({length:N},()=>new Set()),past=Array.from({length:N},()=>new Float64Array(N));
+ for(const r of state.rules){const a=idx[r.a],b=idx[r.b];if(a===undefined||b===undefined)continue;(r.type==='no'?forbidden:preferred)[a].add(b);(r.type==='no'?forbidden:preferred)[b].add(a)}
+ for(const h of state.history)for(const g of h.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){let a=idx[g[i]],b=idx[g[j]];if(a!==undefined&&b!==undefined){past[a][b]++;past[b][a]++}}
+ const penalty=(a,b)=>past[a][b]*5-(preferred[a].has(b)?9:0)+offsetGap(people[a].tz,people[b].tz)*1.5;
+ let best=null,bestScore=Infinity,nodes=0;
+ const deadline=performance.now()+2500,maxNodes=150000;
+ function search(remaining,groups,score){
+  if(++nodes>maxNodes||performance.now()>deadline)return;
+  if(!remaining.length){if(score<bestScore){best=groups.map(g=>g.slice());bestScore=score}return}
+  // Anchor on the most constrained remaining person to reduce branching.
+  let anchor=remaining[0],most=-1;
+  for(const p of remaining){let c=0;for(const q of remaining)if(forbidden[p].has(q))c++;if(c>most){most=c;anchor=p}}
+  const others=remaining.filter(x=>x!==anchor);
+  let candidates=[];
+  function choose(start,selected,inc){
+   if(selected.length===size-1){candidates.push({g:[anchor,...selected],inc});return}
+   for(let i=start;i<others.length;i++){const q=others[i];if(forbidden[anchor].has(q)||selected.some(x=>forbidden[x].has(q)))continue;let extra=penalty(anchor,q);for(const x of selected)extra+=penalty(x,q);selected.push(q);choose(i+1,selected,inc+extra);selected.pop();if(candidates.length>20000)return}
+  }
+  choose(0,[],0);
+  candidates=shuffled(candidates).sort((a,b)=>a.inc-b.inc);
+  // Explore high quality choices first, with a cap to keep large rosters responsive.
+  for(const c of candidates.slice(0,Math.max(12,Math.min(70,Math.floor(3000/(groups.length+1)))))){
+   const taken=new Set(c.g);
+   search(remaining.filter(x=>!taken.has(x)),[...groups,c.g],score+c.inc);
+   if(nodes>maxNodes||performance.now()>deadline)break;
+  }
+ }
+ search(shuffled(Array.from({length:N},(_,i)=>i)),[],0);
+ if(!best)throw Error('No valid arrangement was found within the search limit. Check the “keep apart” rules or try again. A solution may still exist.');
+ return {groups:shuffled(best.map(g=>shuffled(g.map(i=>ids[i])))),score:bestScore,nodes};
+}
+function drawGroups(){
+ const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));
+ $('groups').innerHTML=current?current.groups.map((g,i)=>`<div class="group"><b>Group ${i+1}</b>${g.map(p=>`<div>${escapeHTML(names[p]||p)} <small>(${escapeHTML(tzName(tzs[p]))})</small></div>`).join('')}</div>`).join(''):'';
+ $('save').disabled=!current||current.saved===true;$('again').disabled=!current;$('csv').disabled=$('copy').disabled=!current;
+ $('stats').innerHTML=current?`<span class="stat">${current.groups.length} groups</span><span class="stat">${state.people.length} people</span><span class="stat">${current.repeatPairs} repeated pairings</span><span class="stat">${current.metPreferences} preferred pairings</span>`:'';
+}
+function generate(){
+ $('status').textContent='Working…';
+ setTimeout(()=>{try{
+ const result=solve();const seen=new Set(),counts=new Map();
+ for(const h of state.history)for(const g of h.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const k=[g[i],g[j]].sort().join('|');counts.set(k,(counts.get(k)||0)+1)}
+ let repeats=0,preferred=0;for(const g of result.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const k=[g[i],g[j]].sort().join('|');if(counts.has(k))repeats++;if(state.rules.some(r=>r.type==='prefer'&&[r.a,r.b].sort().join('|')===k))preferred++}
+ current={groups:result.groups,repeatPairs:repeats,metPreferences:preferred,saved:false};drawGroups();$('status').textContent='Groups are ready! Review them below. Choose “Try Another Arrangement” to see another option, or “Keep These Groups” when you are happy.';
+ }catch(e){$('status').textContent=e.message}},20);
+}
+$('generate').onclick=generate;$('again').onclick=generate;
+$('save').onclick=()=>{if(!current||current.saved)return;state.history.push({date:new Date().toLocaleString(),groups:current.groups.map(g=>g.slice())});current.saved=true;persist();render();drawGroups();$('status').textContent='✓ These groups are saved to history. You can close this page and return later.'};
+$('history').onclick=e=>{const i=e.target.dataset.history;if(i===undefined)return;const h=state.history[Number(i)];current={groups:h.groups,repeatPairs:0,metPreferences:0};drawGroups();$('status').textContent='Viewing saved round from '+h.date+'.'};
+$('clearHistory').onclick=()=>{if(!confirm('Delete all saved group history?'))return;state.history=[];persist();render()};
+function textGroups(){const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));return current.groups.map((g,i)=>`Group ${i+1}: ${g.map(x=>(names[x]||x)+' ('+tzName(tzs[x])+')').join(', ')}`).join('\n')}
+$('copy').onclick=async()=>{try{await navigator.clipboard.writeText(textGroups());$('status').textContent='Groups copied.'}catch(e){prompt('Copy these groups:',textGroups())}};
+function download(filename,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),2000)}
+$('csv').onclick=()=>{if(!current)return;const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));const rows=[['Group','Person','Time zone'],...current.groups.flatMap((g,i)=>g.map(p=>[i+1,names[p]||p,tzName(tzs[p])]))];download('group-assignments.csv',rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv')};
+$('export').onclick=()=>download('group-mixer-backup.json',JSON.stringify(state,null,2),'application/json');
+$('backupTop').onclick=()=>$('export').click();
+$('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!Array.isArray(s.people)||!Array.isArray(s.rules)||!Array.isArray(s.history)||!s.people.every(p=>typeof p.id==='string'&&typeof p.name==='string'))throw Error('Invalid backup');if(!confirm('Replace current roster, rules, and history with this backup?'))return;state=s;current=null;persist();render();drawGroups()}catch(err){alert('Could not import: '+err.message)}e.target.value=''};
+render();
+try{if(localStorage.getItem(KEY))savedNotice(true)}catch(e){savedNotice(false)}
+</script></body></html>
