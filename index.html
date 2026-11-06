@@ -22,7 +22,7 @@
 <h1>🌿 SEM Group Mixer</h1><section class="welcome"><h2>Welcome to SEM Group Mixer!</h2><p>This tool helps you organize students into small groups while considering scheduling needs and preferences. Your student information saves automatically. You can leave and return later using this same computer and browser. When you're happy with an arrangement, select Keep These Groups to save it for future assignments.</p><p><strong>Getting started:</strong> 1. Add students and their time zones → 2. Set group preferences → 3. Create groups → 4. Keep the groups you choose.</p></section>
 <section class="save-banner" id="saveBanner" aria-live="polite"><strong id="saveHeading">✓ Your student information saves automatically</strong><p id="saveDetail">You can close this page and come back later using this same browser and device.</p><div class="controls"><button id="backupTop" type="button">Download a safety backup</button><span class="note" id="saveWhen">Your information stays on this device, not in GitHub.</span></div><p class="note"><strong style="display:inline;font-size:inherit">Important:</strong> If you change computers or browsers, or clear browser data, use your downloaded backup and the “Import backup” option below to restore your work.</p></section>
 <section class="panel"><h2>1. Student roster, time zones & grouping preferences</h2><div class="grid"><div><label for="defaultTZ">Step 1: Choose the time zone for the students you are adding</label><select id="defaultTZ"></select><p class="hint">Students in different time zones? Add one set of names, change the time zone, then add the next set. You can also change each student’s time zone, gender, and grouping preference on the right.</p><label for="names">Step 2: Enter student names (one per line)</label><textarea id="names" placeholder="Alice&#10;Bob&#10;Carol"></textarea><div class="controls"><button id="addNames">Add names</button><button class="secondary" id="demo">Load example (42 people)</button></div></div><div><div class="controls"><strong id="count">0 people</strong><button class="secondary" id="export">Export backup</button><label class="filelabel" for="import">Import backup</label><input class="hide" id="import" type="file" accept=".json,application/json"></div><div class="list" id="roster"></div></div></div></section>
-<section class="panel"><h2>2. Group preferences</h2><p class="hint">For each student, choose gender and whether a same-gender group is preferred or not important in the roster above. A required choice will never be overridden. Students who prefer not to disclose gender can select no preference. Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones are considered automatically; nearby time zones are preferred, but exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
+<section class="panel"><h2>2. Group preferences</h2><p class="hint">For each student, choose gender and whether a same-gender group is preferred or not important in the roster above. Same-gender preferences are optional and never prevent groups from being created. Students who prefer not to disclose gender can select no preference. Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones are considered automatically; nearby time zones are preferred, but exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
 <section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Try Another Arrangement:</strong> See a different possibility. This does not save or change previous group rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
 <section class="panel"><h2>4. Previous rounds</h2><p>These are the group assignments you chose to keep. Future groups will try to pair different students together. Required “keep apart” rules always take priority.</p><div class="controls"><span id="historyCount"></span><button class="danger" id="clearHistory">Clear history</button></div><div id="history"></div></section>
 <footer>Tip: Export a backup after changes. Browser data can be lost if you clear site data or switch devices. This file works offline.</footer>
@@ -68,44 +68,77 @@ $('addRule').onclick=()=>{const a=$('a').value,b=$('b').value,type=$('type').val
 $('rules').onclick=e=>{const rid=e.target.dataset.rule;if(!rid)return;state.rules=state.rules.filter(r=>r.id!==rid);persist();render()};
 function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function solve(){
- const people=state.people,n=people.length,size=Number($('size').value);
- if(!Number.isInteger(size)||size<2||size>12)throw Error('Choose a group size between 2 and 12.');
- if(n===0||n%size!==0)throw Error(`You have ${n} people. The roster must divide evenly into groups of ${size}.`);
- const ids=people.map(p=>p.id),idx=Object.fromEntries(ids.map((x,i)=>[x,i])),N=n;
- const forbidden=Array.from({length:N},()=>new Set()),preferred=Array.from({length:N},()=>new Set()),past=Array.from({length:N},()=>new Float64Array(N));
- for(const r of state.rules){const a=idx[r.a],b=idx[r.b];if(a===undefined||b===undefined)continue;(r.type==='no'?forbidden:preferred)[a].add(b);(r.type==='no'?forbidden:preferred)[b].add(a)}
- for(const h of state.history)for(const g of h.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){let a=idx[g[i]],b=idx[g[j]];if(a!==undefined&&b!==undefined){past[a][b]++;past[b][a]++}}
- // A required same-gender request means every other member must have a known, matching gender.
- const genderKey=p=>p.gender==='self'?(p.genderText||'').trim().toLocaleLowerCase():['woman','man','nonbinary'].includes(p.gender)?p.gender:'';
- const compatible=(a,b)=>{const x=people[a],y=people[b],gx=genderKey(x),gy=genderKey(y);return !(x.grouping==='require'||y.grouping==='require')||(!!gx&&gx===gy)};
- const penalty=(a,b)=>{const x=people[a],y=people[b],gx=genderKey(x),gy=genderKey(y);let genderCost=0;if(x.grouping==='prefer'&&(!gx||gx!==gy))genderCost+=7;if(y.grouping==='prefer'&&(!gy||gy!==gx))genderCost+=7;return past[a][b]*5-(preferred[a].has(b)?9:0)+offsetGap(x.tz,y.tz)*1.5+genderCost};
- let best=null,bestScore=Infinity,nodes=0;
- const deadline=performance.now()+2500,maxNodes=150000;
- function search(remaining,groups,score){
-  if(++nodes>maxNodes||performance.now()>deadline)return;
-  if(!remaining.length){if(score<bestScore){best=groups.map(g=>g.slice());bestScore=score}return}
-  // Anchor on the most constrained remaining person to reduce branching.
-  let anchor=remaining[0],most=-1;
-  for(const p of remaining){let c=0;for(const q of remaining)if(forbidden[p].has(q))c++;if(c>most){most=c;anchor=p}}
-  const others=remaining.filter(x=>x!==anchor);
-  let candidates=[];
-  function choose(start,selected,inc){
-   if(selected.length===size-1){candidates.push({g:[anchor,...selected],inc});return}
-   for(let i=start;i<others.length;i++){const q=others[i];if(forbidden[anchor].has(q)||!compatible(anchor,q)||selected.some(x=>forbidden[x].has(q)||!compatible(x,q)))continue;let extra=penalty(anchor,q);for(const x of selected)extra+=penalty(x,q);selected.push(q);choose(i+1,selected,inc+extra);selected.pop();if(candidates.length>20000)return}
+  const people=state.people,n=people.length,size=Number($('size').value);
+  if(!Number.isInteger(size)||size<2||size>12)throw Error('Choose a group size between 2 and 12.');
+  if(n===0||n%size!==0)throw Error(`You have ${n} people. The roster must divide evenly into groups of ${size}.`);
+  const ids=people.map(p=>p.id),idx=Object.fromEntries(ids.map((x,i)=>[x,i]));
+  const forbidden=Array.from({length:n},()=>new Set()),preferred=Array.from({length:n},()=>new Set());
+  const past=Array.from({length:n},()=>new Float64Array(n));
+  for(const r of state.rules){const a=idx[r.a],b=idx[r.b];if(a===undefined||b===undefined||a===b)continue;
+    const dest=r.type==='no'?forbidden:preferred;dest[a].add(b);dest[b].add(a)}
+  for(const h of state.history)for(const g of h.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
+    const a=idx[g[i]],b=idx[g[j]];if(a!==undefined&&b!==undefined){past[a][b]++;past[b][a]++}}
+  const genderKey=p=>p.gender==='self'?(p.genderText||'').trim().toLocaleLowerCase():['woman','man','nonbinary'].includes(p.gender)?p.gender:'';
+  const penalty=(a,b)=>{const x=people[a],y=people[b],gx=genderKey(x),gy=genderKey(y);
+    let cost=past[a][b]*5-(preferred[a].has(b)?9:0)+offsetGap(x.tz,y.tz)*1.5;
+    if(x.grouping==='prefer'&&(!gx||gx!==gy))cost+=7;
+    if(y.grouping==='prefer'&&(!gy||gy!==gx))cost+=7;
+    return cost;
+  };
+  const allowed=(a,b)=>!forbidden[a].has(b);
+  const groupCost=g=>{let cost=0;for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++)cost+=penalty(g[i],g[j]);return cost};
+  const validGroup=g=>g.every((a,i)=>g.slice(i+1).every(b=>allowed(a,b)));
+  const all=Array.from({length:n},(_,i)=>i);
+  let best=null,bestScore=Infinity,attempts=0;
+  const deadline=performance.now()+2200;
+  // Construct complete valid arrangements first. Gender is never a hard restriction.
+  while(attempts<350&&performance.now()<deadline){
+    attempts++;
+    const remaining=shuffled(all),groups=[];
+    let failed=false;
+    while(remaining.length){
+      // Pick the most restricted person first, so difficult rules are handled early.
+      remaining.sort((a,b)=>{
+        const ca=remaining.filter(x=>forbidden[a].has(x)).length;
+        const cb=remaining.filter(x=>forbidden[b].has(x)).length;
+        return cb-ca+(Math.random()-.5)*.2;
+      });
+      const group=[remaining.shift()];
+      while(group.length<size){
+        const choices=remaining.filter(x=>group.every(y=>allowed(x,y)));
+        if(!choices.length){failed=true;break}
+        const ranked=choices.map(x=>({x,cost:group.reduce((sum,y)=>sum+penalty(x,y),0)+Math.random()*(attempts%5===0?18:5)})).sort((a,b)=>a.cost-b.cost);
+        const pick=ranked[Math.floor(Math.random()*Math.min(ranked.length,attempts%4===0?3:2))].x;
+        group.push(pick);remaining.splice(remaining.indexOf(pick),1);
+      }
+      if(failed)break;
+      groups.push(group);
+    }
+    if(failed)continue;
+    // Improve arrangements by exchanging students, without breaking hard rules.
+    let score=groups.reduce((sum,g)=>sum+groupCost(g),0);
+    for(let pass=0;pass<5&&performance.now()<deadline;pass++){
+      let improved=false;
+      for(let a=0;a<groups.length;a++)for(let b=a+1;b<groups.length;b++){
+        const old=groupCost(groups[a])+groupCost(groups[b]);
+        let choice=null,gain=0;
+        for(let i=0;i<size;i++)for(let j=0;j<size;j++){
+          const ga=groups[a].slice(),gb=groups[b].slice();[ga[i],gb[j]]=[gb[j],ga[i]];
+          if(!validGroup(ga)||!validGroup(gb))continue;
+          const delta=old-groupCost(ga)-groupCost(gb);
+          if(delta>gain+0.0001){gain=delta;choice={ga,gb}}
+        }
+        if(choice){groups[a]=choice.ga;groups[b]=choice.gb;score-=gain;improved=true}
+      }
+      if(!improved)break;
+    }
+    if(score<bestScore){best=groups.map(g=>g.slice());bestScore=score}
+    if(bestScore<=-100000)break;
   }
-  choose(0,[],0);
-  candidates=shuffled(candidates).sort((a,b)=>a.inc-b.inc);
-  // Explore high quality choices first, with a cap to keep large rosters responsive.
-  for(const c of candidates.slice(0,Math.max(12,Math.min(70,Math.floor(3000/(groups.length+1)))))){
-   const taken=new Set(c.g);
-   search(remaining.filter(x=>!taken.has(x)),[...groups,c.g],score+c.inc);
-   if(nodes>maxNodes||performance.now()>deadline)break;
-  }
- }
- search(shuffled(Array.from({length:N},(_,i)=>i)),[],0);
- if(!best)throw Error('No valid arrangement was found within the search limit. Check required same-gender choices, missing gender information, and “keep apart” rules. Try again; a solution may still exist.');
- return {groups:shuffled(best.map(g=>shuffled(g.map(i=>ids[i])))),score:bestScore,nodes};
+  if(!best)throw Error('No arrangement was found. Check the “keep apart” rules and try again. Gender preferences do not block grouping.');
+  return {groups:shuffled(best.map(g=>shuffled(g.map(i=>ids[i])))),score:bestScore,nodes:attempts};
 }
+
 function drawGroups(){
  const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));
  $('groups').innerHTML=current?current.groups.map((g,i)=>`<div class="group"><b>Group ${i+1}</b>${g.map(p=>`<div>${escapeHTML(names[p]||p)} <small>(${escapeHTML(tzName(tzs[p]))})</small></div>`).join('')}</div>`).join(''):'';
