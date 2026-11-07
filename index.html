@@ -23,7 +23,7 @@
 <section class="save-banner" id="saveBanner" aria-live="polite"><strong id="saveHeading">✓ Your student information saves automatically</strong><p id="saveDetail">You can close this page and come back later using this same browser and device.</p><div class="controls"><button id="backupTop" type="button">Download a safety backup</button><span class="note" id="saveWhen">Your information stays on this device, not in GitHub.</span></div><p class="note"><strong style="display:inline;font-size:inherit">Important:</strong> If you change computers or browsers, or clear browser data, use your downloaded backup and the “Import backup” option below to restore your work.</p></section>
 <section class="panel"><h2>1. Student roster, time zones & grouping preferences</h2><div class="grid"><div><label for="defaultTZ">Step 1: Choose the time zone for the students you are adding</label><select id="defaultTZ"></select><p class="hint">Students in different time zones? Add one set of names, change the time zone, then add the next set. You can also change each student’s time zone, gender, and grouping preference on the right.</p><label for="names">Step 2: Enter student names (one per line)</label><textarea id="names" placeholder="Alice&#10;Bob&#10;Carol"></textarea><div class="controls"><button id="addNames">Add names</button><button class="secondary" id="demo">Load example (42 people)</button></div></div><div><div class="controls"><strong id="count">0 people</strong><button class="secondary" id="export">Export backup</button><label class="filelabel" for="import">Import backup</label><input class="hide" id="import" type="file" accept=".json,application/json"></div><div class="list" id="roster"></div></div></div></section>
 <section class="panel"><h2>2. Group preferences</h2><p class="hint">For each student, choose gender and whether a same-gender group is preferred or not important in the roster above. Same-gender preferences are optional and never prevent groups from being created. Students who prefer not to disclose gender can select no preference. Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones are considered automatically; nearby time zones are preferred, but exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
-<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Try Another Arrangement:</strong> See a different possibility. This does not save or change previous group rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
+<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Lock a group:</strong> Click 🔓 Lock group on any group you want to keep. Click again to unlock it.</p><p><strong>Remix Unlocked Groups:</strong> Keep locked groups unchanged and rearrange everyone else. This does not save or change previous rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
 <section class="panel"><h2>4. Previous rounds</h2><p>These are the group assignments you chose to keep. Future groups will try to pair different students together. Required “keep apart” rules always take priority.</p><div class="controls"><span id="historyCount"></span><button class="danger" id="clearHistory">Clear history</button></div><div id="history"></div></section>
 <footer>Tip: Export a backup after changes. Browser data can be lost if you clear site data or switch devices. This file works offline.</footer>
 </main><section id="printSheet" aria-hidden="true"></section><script>
@@ -67,7 +67,7 @@ $('roster').onclick=e=>{const rid=e.target.dataset.remove;if(!rid)return;state.p
 $('addRule').onclick=()=>{const a=$('a').value,b=$('b').value,type=$('type').value;if(!a||!b||a===b){alert('Choose two different people.');return}state.rules=state.rules.filter(r=>!([r.a,r.b].includes(a)&&[r.a,r.b].includes(b)));state.rules.push({id:id(),a,b,type});persist();render()};
 $('rules').onclick=e=>{const rid=e.target.dataset.rule;if(!rid)return;state.rules=state.rules.filter(r=>r.id!==rid);persist();render()};
 function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function solve(){
+function solve(lockedGroups=[]){
   const people=state.people,n=people.length,size=Number($('size').value);
   if(!Number.isInteger(size)||size<2||size>12)throw Error('Choose a group size between 2 and 12.');
   if(n===0||n%size!==0)throw Error(`You have ${n} people. The roster must divide evenly into groups of ${size}.`);
@@ -88,11 +88,17 @@ function solve(){
   const allowed=(a,b)=>!forbidden[a].has(b);
   const groupCost=g=>{let cost=0;for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++)cost+=penalty(g[i],g[j]);return cost};
   const validGroup=g=>g.every((a,i)=>g.slice(i+1).every(b=>allowed(a,b)));
-  const all=Array.from({length:n},(_,i)=>i);
-  let best=null,bestScore=Infinity,attempts=0;
+  const locked=lockedGroups.map(g=>g.map(id=>idx[id]));
+  if(locked.some(g=>g.length!==size||g.some(i=>i===undefined)||!validGroup(g)))throw Error('A locked group is no longer valid. Unlock it and try again.');
+  const lockedIds=locked.flat();
+  if(new Set(lockedIds).size!==lockedIds.length)throw Error('A student appears in more than one locked group.');
+  const fixed=new Set(lockedIds);
+  const all=Array.from({length:n},(_,i)=>i).filter(i=>!fixed.has(i));
+  if(all.length%size!==0)throw Error('The unlocked students cannot be divided evenly.');
+  let best=all.length===0?[]:null,bestScore=all.length===0?0:Infinity,attempts=0;
   const deadline=performance.now()+2200;
   // Construct complete valid arrangements first. Gender is never a hard restriction.
-  while(attempts<350&&performance.now()<deadline){
+  while(all.length&&attempts<350&&performance.now()<deadline){
     attempts++;
     const remaining=shuffled(all),groups=[];
     let failed=false;
@@ -136,27 +142,31 @@ function solve(){
     if(bestScore<=-100000)break;
   }
   if(!best)throw Error('No arrangement was found. Check the “keep apart” rules and try again. Gender preferences do not block grouping.');
-  return {groups:shuffled(best.map(g=>shuffled(g.map(i=>ids[i])))),score:bestScore,nodes:attempts};
+  return {groups:[...lockedGroups.map(g=>g.slice()),...shuffled(best.map(g=>shuffled(g.map(i=>ids[i]))))],score:bestScore,nodes:attempts};
 }
 
 function drawGroups(){
  const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));
- $('groups').innerHTML=current?current.groups.map((g,i)=>`<div class="group"><b>Group ${i+1}</b>${g.map(p=>`<div>${escapeHTML(names[p]||p)} <small>(${escapeHTML(tzName(tzs[p]))})</small></div>`).join('')}</div>`).join(''):'';
- $('save').disabled=!current||current.saved===true;$('again').disabled=!current;$('csv').disabled=$('copy').disabled=$('printGroups').disabled=!current;
- $('stats').innerHTML=current?`<span class="stat">${current.groups.length} groups</span><span class="stat">${state.people.length} people</span><span class="stat">${current.repeatPairs} repeated pairings</span><span class="stat">${current.metPreferences} preferred pairings</span>`:'';
+ $('groups').innerHTML=current?current.groups.map((g,i)=>`<div class="group"><div class="controls" style="justify-content:space-between"><b>Group ${i+1}</b><button type="button" class="${current.locks?.includes(i)?'':'secondary'}" data-lock="${i}" ${current.saved?'disabled':''} aria-pressed="${current.locks?.includes(i)?'true':'false'}">${current.locks?.includes(i)?'🔒 Locked':'🔓 Lock group'}</button></div>${g.map(p=>`<div>${escapeHTML(names[p]||p)} <small>(${escapeHTML(tzName(tzs[p]))})</small></div>`).join('')}</div>`).join(''):'';
+ $('save').disabled=!current||current.saved===true;$('again').disabled=!current||current.saved===true;$('csv').disabled=$('copy').disabled=$('printGroups').disabled=!current;
+ $('again').textContent=current&&current.locks?.length?'Remix Unlocked Groups':'Try Another Arrangement';
+ $('stats').innerHTML=current?`<span class="stat">${current.groups.length} groups</span><span class="stat">${state.people.length} people</span><span class="stat">${current.repeatPairs} repeated pairings</span><span class="stat">${current.metPreferences} preferred pairings</span><span class="stat">${current.locks?.length||0} locked groups</span>`:'';
 }
-function generate(){
+$('groups').onclick=e=>{const btn=e.target.closest('[data-lock]');if(!btn||!current||current.saved)return;const i=Number(btn.dataset.lock);current.locks=current.locks||[];current.locks=current.locks.includes(i)?current.locks.filter(x=>x!==i):[...current.locks,i];drawGroups();$('status').textContent=current.locks.length?`${current.locks.length} group(s) locked. Click Remix Unlocked Groups to rearrange the others.`:'All groups unlocked. You can remix everyone.'};
+function generate(preserveLocks=false){
+ if(current?.saved&&preserveLocks)return;
+ const lockedGroups=preserveLocks&&current?current.locks.map(i=>current.groups[i].slice()):[];
  $('status').textContent='Working…';
  setTimeout(()=>{try{
- const result=solve();const seen=new Set(),counts=new Map();
+ const result=solve(lockedGroups);const counts=new Map();
  for(const h of state.history)for(const g of h.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const k=[g[i],g[j]].sort().join('|');counts.set(k,(counts.get(k)||0)+1)}
  let repeats=0,preferred=0;for(const g of result.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const k=[g[i],g[j]].sort().join('|');if(counts.has(k))repeats++;if(state.rules.some(r=>r.type==='prefer'&&[r.a,r.b].sort().join('|')===k))preferred++}
- current={groups:result.groups,repeatPairs:repeats,metPreferences:preferred,saved:false};drawGroups();$('status').textContent='Groups are ready! Review them below. Choose “Try Another Arrangement” to see another option, or “Keep These Groups” when you are happy.';
+ current={groups:result.groups,locks:lockedGroups.map((_,i)=>i),repeatPairs:repeats,metPreferences:preferred,saved:false};drawGroups();$('status').textContent=lockedGroups.length?`Remixed the unlocked groups. ${lockedGroups.length} locked group(s) stayed the same.`:'Groups are ready! Lock any groups you like, then click Remix Unlocked Groups. Click Keep These Groups when you are happy.';
  }catch(e){$('status').textContent=e.message}},20);
 }
-$('generate').onclick=generate;$('again').onclick=generate;
+$('generate').onclick=()=>generate(false);$('again').onclick=()=>generate(true);
 $('save').onclick=()=>{if(!current||current.saved)return;state.history.push({date:new Date().toLocaleString(),groups:current.groups.map(g=>g.slice())});current.saved=true;persist();render();drawGroups();$('status').textContent='✓ These groups are saved to history. You can close this page and return later.'};
-$('history').onclick=e=>{const i=e.target.dataset.history;if(i===undefined)return;const h=state.history[Number(i)];current={groups:h.groups,repeatPairs:0,metPreferences:0};drawGroups();$('status').textContent='Viewing saved round from '+h.date+'.'};
+$('history').onclick=e=>{const i=e.target.dataset.history;if(i===undefined)return;const h=state.history[Number(i)];current={groups:h.groups,locks:[],repeatPairs:0,metPreferences:0,saved:true};drawGroups();$('status').textContent='Viewing saved round from '+h.date+'.'};
 $('clearHistory').onclick=()=>{if(!confirm('Delete all saved group history?'))return;state.history=[];persist();render()};
 function textGroups(){const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));return current.groups.map((g,i)=>`Group ${i+1}: ${g.map(x=>(names[x]||x)+' ('+tzName(tzs[x])+')').join(', ')}`).join('\n')}
 $('copy').onclick=async()=>{try{await navigator.clipboard.writeText(textGroups());$('status').textContent='Groups copied.'}catch(e){prompt('Copy these groups:',textGroups())}};
