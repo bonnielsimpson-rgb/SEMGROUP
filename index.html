@@ -25,7 +25,7 @@
 <section class="panel" id="studentEditorPanel"><h2>Edit student details</h2><p class="hint">Use this for students who did not complete the Google Form, or to correct imported answers. Blank availability means unknown, not unavailable.</p><label for="editStudent">Student</label><select id="editStudent"><option value="">Choose a student</option></select><div id="editFields" class="hide"><div class="grid"><div><label for="editEmail">Email</label><input id="editEmail" type="email" autocomplete="off"><label for="editPhone">Mobile phone</label><input id="editPhone" type="tel" autocomplete="off"><label for="editTogether">People they would like to stay with (review manually)</label><textarea id="editTogether" style="min-height:70px"></textarea></div><div><label for="editFocus">Group interests</label><div id="editFocus" class="checks"><label><input type="checkbox" value="heart"> Heart / application</label><label><input type="checkbox" value="theology"> Theology / head</label><label><input type="checkbox" value="flexible"> Happy to be stretched</label></div><label for="editAvailability">Availability (student's local time)</label><div id="editAvailability" class="checks"><label><input type="checkbox" value="weekday-day"> Weekday daytime</label><label><input type="checkbox" value="weekday-evening"> Weekday evening</label><label><input type="checkbox" value="weekend"> Weekend</label><label><input type="checkbox" value="flexible"> Flexible</label></div></div></div><div class="controls"><button id="saveStudent" type="button">Save student details</button><span id="editStatus" role="status"></span></div></div></section>
 <section class="panel" id="formImportPanel"><h2>Import Kevin’s Google Form responses</h2><p class="hint">In Google Forms, open Responses → View in Sheets, then in Google Sheets choose File → Download → Comma Separated Values (.csv). Import that file here. No Google account connection is needed; the file is read on this device only.</p><label for="formCSV">Google Form responses CSV</label><input id="formCSV" type="file" accept=".csv,text/csv"><div class="controls" style="margin-top:10px"><button id="previewForm" type="button">Preview import</button><button id="applyForm" type="button" disabled>Import students and preferences</button></div><div id="formPreview" class="status" role="status"></div><p class="hint">Existing students are matched by email first, then exact name. Existing rules and previous rounds are preserved. Phone numbers and email addresses are stored in this browser and included in JSON backups, so protect those files. Availability and time zones guide suggested matches, but broad categories cannot guarantee a workable meeting time. All groups need scheduling confirmation. Focus and gender preferences remain optional.</p></section>
 <section class="panel"><h2>2. Group preferences</h2><p class="hint">For each student, choose gender and whether a same-gender group is preferred or not important in the roster above. Same-gender preferences are optional and never prevent groups from being created. Students who prefer not to disclose gender can select no preference. Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones and approximate local-time availability are considered automatically; neither guarantees a meeting time. Exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
-<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Lock a group:</strong> Click 🔓 Lock group on any group you want to keep. Click again to unlock it.</p><p><strong>Remix Unlocked Groups:</strong> Keep locked groups unchanged and rearrange everyone else. This does not save or change previous rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="contactsCSV" disabled>Download group contacts CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
+<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">Group sizes: <select id="groupSize"><option value="3">3 students</option><option value="3-4">3 or 4 students</option><option value="4">4 students</option><option value="4-5" selected>4 or 5 students</option><option value="5">5 students</option><option value="5-6">5 or 6 students</option><option value="6">6 students</option></select></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Lock a group:</strong> Click 🔓 Lock group on any group you want to keep. Click again to unlock it.</p><p><strong>Remix Unlocked Groups:</strong> Keep locked groups unchanged and rearrange everyone else. This does not save or change previous rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="contactsCSV" disabled>Download group contacts CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
 <section class="panel"><h2>4. Previous rounds</h2><p>These are the group assignments you chose to keep. Future groups will try to pair different students together. Required “keep apart” rules always take priority.</p><div class="controls"><span id="historyCount"></span><button class="danger" id="clearHistory">Clear history</button></div><div id="history"></div></section>
 <footer>Tip: Export a backup after changes. Browser data can be lost if you clear site data or switch devices. This file works offline.</footer>
 </main><section id="printSheet" aria-hidden="true"></section><script>
@@ -97,9 +97,17 @@ function estimatedOverlap(a,b){
  return false;
 }
 function solve(lockedGroups=[]){
-  const people=state.people,n=people.length,size=Number($('size').value);
-  if(!Number.isInteger(size)||size<2||size>12)throw Error('Choose a group size between 2 and 12.');
-  if(n===0||n%size!==0)throw Error(`You have ${n} people. The roster must divide evenly into groups of ${size}.`);
+  const people=state.people,n=people.length;
+  const [minSize,maxSize]=($('groupSize').value||'4-5').split('-').map(Number);
+  if(n<minSize)throw Error(`At least ${minSize} students are needed for this group size.`);
+  // Prefer fewer groups; mix the two permitted sizes when needed.
+  let groupCount=-1;
+  for(let count=Math.ceil(n/maxSize);count<=Math.floor(n/minSize);count++){
+    if(n>=count*minSize&&n<=count*maxSize){groupCount=count;break;}
+  }
+  if(groupCount<0)throw Error(`Cannot divide ${n} students into groups of ${minSize}${minSize===maxSize?'':` or ${maxSize}`}. Choose another group-size option.`);
+  const largerCount=n-minSize*groupCount;
+  const targetSizes=[...Array(largerCount).fill(maxSize),...Array(groupCount-largerCount).fill(minSize)];
   const ids=people.map(p=>p.id),idx=Object.fromEntries(ids.map((x,i)=>[x,i]));
   const forbidden=Array.from({length:n},()=>new Set()),preferred=Array.from({length:n},()=>new Set());
   const past=Array.from({length:n},()=>new Float64Array(n));
@@ -124,20 +132,23 @@ function solve(lockedGroups=[]){
   const groupCost=g=>{let cost=0;for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++)cost+=penalty(g[i],g[j]);return cost};
   const validGroup=g=>g.every((a,i)=>g.slice(i+1).every(b=>allowed(a,b)));
   const locked=lockedGroups.map(g=>g.map(id=>idx[id]));
-  if(locked.some(g=>g.length!==size||g.some(i=>i===undefined)||!validGroup(g)))throw Error('A locked group violates a keep-apart rule or no longer matches the roster. Unlock it and try again.');
+  if(locked.some(g=>![minSize,maxSize].includes(g.length)||g.some(i=>i===undefined)||!validGroup(g)))throw Error('A locked group must match the selected group sizes and cannot violate a keep-apart rule.');
+  const availableSizes=targetSizes.slice();
+  for(const g of locked){const at=availableSizes.indexOf(g.length);if(at<0)throw Error('Locked groups do not fit the selected group sizes. Unlock a group and try again.');availableSizes.splice(at,1)}
   const lockedIds=locked.flat();
   if(new Set(lockedIds).size!==lockedIds.length)throw Error('A student appears in more than one locked group.');
   const fixed=new Set(lockedIds);
   const all=Array.from({length:n},(_,i)=>i).filter(i=>!fixed.has(i));
-  if(all.length%size!==0)throw Error('The unlocked students cannot be divided evenly.');
+  if(all.length!==availableSizes.reduce((a,b)=>a+b,0))throw Error('The locked groups leave an invalid student count.');
   let best=all.length===0?[]:null,bestScore=all.length===0?0:Infinity,attempts=0;
   const deadline=performance.now()+3500;
   // Construct complete valid arrangements first. Gender is never a hard restriction.
   while(all.length&&attempts<650&&performance.now()<deadline){
     attempts++;
-    const remaining=shuffled(all),groups=[];
+    const remaining=shuffled(all),groups=[],sizes=shuffled(availableSizes);
     let failed=false;
     while(remaining.length){
+      const size=sizes[groups.length];
       // Pick the most restricted person first, so difficult rules are handled early.
       remaining.sort((a,b)=>{
         const ca=remaining.filter(x=>forbidden[a].has(x)).length;
@@ -163,7 +174,7 @@ function solve(lockedGroups=[]){
       for(let a=0;a<groups.length;a++)for(let b=a+1;b<groups.length;b++){
         const old=groupCost(groups[a])+groupCost(groups[b]);
         let choice=null,gain=0;
-        for(let i=0;i<size;i++)for(let j=0;j<size;j++){
+        for(let i=0;i<groups[a].length;i++)for(let j=0;j<groups[b].length;j++){
           const ga=groups[a].slice(),gb=groups[b].slice();[ga[i],gb[j]]=[gb[j],ga[i]];
           if(!validGroup(ga)||!validGroup(gb))continue;
           const delta=old-groupCost(ga)-groupCost(gb);
@@ -176,7 +187,7 @@ function solve(lockedGroups=[]){
     if(score<bestScore){best=groups.map(g=>g.slice());bestScore=score}
     if(bestScore<=-100000)break;
   }
-  if(!best)throw Error('No arrangement found. Check the keep-apart rules and group size, then try again. Availability is a preference, not a restriction.');
+  if(!best)throw Error('No arrangement found. Check the keep-apart rules or unlock a group, then try again. Availability is a preference, not a restriction.');
   return {groups:[...lockedGroups.map(g=>g.slice()),...shuffled(best.map(g=>shuffled(g.map(i=>ids[i]))))],score:bestScore,nodes:attempts};
 }
 
@@ -210,6 +221,7 @@ function generate(preserveLocks=false){
  current={groups:result.groups,locks:lockedGroups.map((_,i)=>i),repeatPairs:repeats,metPreferences:preferred,saved:false};drawGroups();$('status').textContent=lockedGroups.length?`Remixed the unlocked groups. ${lockedGroups.length} locked group(s) stayed the same.`:'Groups are ready! Confirm meeting times with each group. Lock any groups you like, then click Remix Unlocked Groups. Click Keep These Groups when you are happy.';
  }catch(e){$('status').textContent=e.message}},20);
 }
+$('groupSize').value=localStorage.getItem('sem-group-size')||'4-5';$('groupSize').onchange=()=>localStorage.setItem('sem-group-size',$('groupSize').value);
 $('generate').onclick=()=>generate(false);$('again').onclick=()=>generate(true);
 $('save').onclick=()=>{if(!current||current.saved)return;state.history.push({date:new Date().toLocaleString(),groups:current.groups.map(g=>g.slice())});current.saved=true;persist();render();drawGroups();$('status').textContent='✓ These groups are saved to history. You can close this page and return later.'};
 $('history').onclick=e=>{const i=e.target.dataset.history;if(i===undefined)return;const h=state.history[Number(i)];current={groups:h.groups,locks:[],repeatPairs:0,metPreferences:0,saved:true};drawGroups();$('status').textContent='Viewing saved round from '+h.date+'.'};
