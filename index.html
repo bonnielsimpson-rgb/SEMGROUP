@@ -3,7 +3,7 @@
 <title>SEM Group Mixer</title>
 <style>
 :root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#283b2c;background:#faf5eb}*{box-sizing:border-box}body{margin:0}main{max-width:1100px;margin:auto;padding:24px}h1{margin:0;font-size:2rem}h2{font-size:1.15rem;margin:0 0 12px}p{color:#5d6879;line-height:1.5}.panel{background:#fffdf8;border:1px solid #e8ddc9;border-radius:14px;padding:20px;margin-top:18px;box-shadow:0 2px 12px #18243b08}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center}button,.filelabel{border:0;background:#b9653e;color:white;border-radius:8px;padding:10px 14px;font:inherit;cursor:pointer}button.secondary,.filelabel{background:#e5ebda;color:#35553b}button.danger{background:#fff0f0;color:#a32b35}button:disabled{opacity:.5;cursor:wait}input,select,textarea{font:inherit;border:1px solid #cbd3df;border-radius:8px;padding:9px;width:100%;background:white}textarea{min-height:145px}label{display:block;font-weight:600;font-size:.9rem;margin:10px 0 5px}small{color:#697586}.list{max-height:245px;overflow:auto;margin-top:10px}.person{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #edf0f4;gap:8px}.person button{padding:3px 8px;font-size:.8rem}.rule{padding:7px 0;border-bottom:1px solid #edf0f4;display:flex;justify-content:space-between;gap:8px}.groups{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:12px;margin-top:14px}.group{border:1px solid #dce4f4;border-radius:11px;padding:13px;background:#f7f8ef}.group b{color:#466344}.group div{padding:5px 0}.status{margin-top:12px;font-weight:600}.muted{color:#697586}.stat{display:inline-block;background:#e9eddd;border-radius:6px;padding:5px 8px;margin:4px 5px 4px 0}.hide{display:none!important}footer{margin:25px 0;color:#697586;font-size:.85rem}@media(max-width:700px){.grid{grid-template-columns:1fr}main{padding:14px}}
-.save-banner{background:#e5ebda;border:1px solid #b8c9aa;border-radius:12px;padding:16px 18px;margin-top:18px}.save-banner strong{display:block;font-size:1.1rem;color:#274d31}.save-banner p{margin:6px 0;color:#405445}.save-banner .controls{margin-top:10px}.save-banner button{font-weight:650}.save-banner .note{font-size:.87rem}.save-banner.warning{background:#fff0e7;border-color:#d49c75}.save-banner.warning strong{color:#8e3923}@media print{.save-banner{display:none}}
+.checks label{font-weight:400;margin:7px 0}.checks input{width:auto;margin-right:7px}.save-banner{background:#e5ebda;border:1px solid #b8c9aa;border-radius:12px;padding:16px 18px;margin-top:18px}.save-banner strong{display:block;font-size:1.1rem;color:#274d31}.save-banner p{margin:6px 0;color:#405445}.save-banner .controls{margin-top:10px}.save-banner button{font-weight:650}.save-banner .note{font-size:.87rem}.save-banner.warning{background:#fff0e7;border-color:#d49c75}.save-banner.warning strong{color:#8e3923}@media print{.save-banner{display:none}}
 .welcome{background:#f0f2e5;border:1px solid #d4dec6;border-radius:14px;padding:18px 20px;margin-top:18px}.welcome h2{color:#35553b;margin:0 0 8px}.welcome p{margin:7px 0}.hint{font-size:.9rem;color:#5b6958;margin:6px 0 12px}.group-help{background:#fff4e9;border-left:4px solid #b9653e;border-radius:6px;padding:11px 14px;margin:12px 0}.group-help p{margin:5px 0}button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #7b9c7e;outline-offset:2px}
 #printSheet{display:none}
 @media print{
@@ -22,8 +22,10 @@
 <h1>🌿 SEM Group Mixer</h1><section class="welcome"><h2>Welcome to SEM Group Mixer!</h2><p>This tool helps you organize students into small groups while considering scheduling needs and preferences. Your student information saves automatically. You can leave and return later using this same computer and browser. When you're happy with an arrangement, select Keep These Groups to save it for future assignments.</p><p><strong>Getting started:</strong> 1. Add students and their time zones → 2. Set group preferences → 3. Create groups → 4. Keep the groups you choose.</p></section>
 <section class="save-banner" id="saveBanner" aria-live="polite"><strong id="saveHeading">✓ Your student information saves automatically</strong><p id="saveDetail">You can close this page and come back later using this same browser and device.</p><div class="controls"><button id="backupTop" type="button">Download a safety backup</button><span class="note" id="saveWhen">Your information stays on this device, not in GitHub.</span></div><p class="note"><strong style="display:inline;font-size:inherit">Important:</strong> If you change computers or browsers, or clear browser data, use your downloaded backup and the “Import backup” option below to restore your work.</p></section>
 <section class="panel"><h2>1. Student roster, time zones & grouping preferences</h2><div class="grid"><div><label for="defaultTZ">Step 1: Choose the time zone for the students you are adding</label><select id="defaultTZ"></select><p class="hint">Students in different time zones? Add one set of names, change the time zone, then add the next set. You can also change each student’s time zone, gender, and grouping preference on the right.</p><label for="names">Step 2: Enter student names (one per line)</label><textarea id="names" placeholder="Alice&#10;Bob&#10;Carol"></textarea><div class="controls"><button id="addNames">Add names</button><button class="secondary" id="demo">Load example (42 people)</button></div></div><div><div class="controls"><strong id="count">0 people</strong><button class="secondary" id="export">Export backup</button><label class="filelabel" for="import">Import backup</label><input class="hide" id="import" type="file" accept=".json,application/json"></div><div class="list" id="roster"></div></div></div></section>
-<section class="panel"><h2>2. Group preferences</h2><p class="hint">For each student, choose gender and whether a same-gender group is preferred or not important in the roster above. Same-gender preferences are optional and never prevent groups from being created. Students who prefer not to disclose gender can select no preference. Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones are considered automatically; nearby time zones are preferred, but exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
-<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Lock a group:</strong> Click 🔓 Lock group on any group you want to keep. Click again to unlock it.</p><p><strong>Remix Unlocked Groups:</strong> Keep locked groups unchanged and rearrange everyone else. This does not save or change previous rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
+<section class="panel" id="studentEditorPanel"><h2>Edit student details</h2><p class="hint">Use this for students who did not complete the Google Form, or to correct imported answers. Blank availability means unknown, not unavailable.</p><label for="editStudent">Student</label><select id="editStudent"><option value="">Choose a student</option></select><div id="editFields" class="hide"><div class="grid"><div><label for="editEmail">Email</label><input id="editEmail" type="email" autocomplete="off"><label for="editPhone">Mobile phone</label><input id="editPhone" type="tel" autocomplete="off"><label for="editTogether">People they would like to stay with (review manually)</label><textarea id="editTogether" style="min-height:70px"></textarea></div><div><label for="editFocus">Group interests</label><div id="editFocus" class="checks"><label><input type="checkbox" value="heart"> Heart / application</label><label><input type="checkbox" value="theology"> Theology / head</label><label><input type="checkbox" value="flexible"> Happy to be stretched</label></div><label for="editAvailability">Availability (student's local time)</label><div id="editAvailability" class="checks"><label><input type="checkbox" value="weekday-day"> Weekday daytime</label><label><input type="checkbox" value="weekday-evening"> Weekday evening</label><label><input type="checkbox" value="weekend"> Weekend</label><label><input type="checkbox" value="flexible"> Flexible</label></div></div></div><div class="controls"><button id="saveStudent" type="button">Save student details</button><span id="editStatus" role="status"></span></div></div></section>
+<section class="panel" id="formImportPanel"><h2>Import Kevin’s Google Form responses</h2><p class="hint">In Google Forms, open Responses → View in Sheets, then in Google Sheets choose File → Download → Comma Separated Values (.csv). Import that file here. No Google account connection is needed; the file is read on this device only.</p><label for="formCSV">Google Form responses CSV</label><input id="formCSV" type="file" accept=".csv,text/csv"><div class="controls" style="margin-top:10px"><button id="previewForm" type="button">Preview import</button><button id="applyForm" type="button" disabled>Import students and preferences</button></div><div id="formPreview" class="status" role="status"></div><p class="hint">Existing students are matched by email first, then exact name. Existing rules and previous rounds are preserved. Phone numbers and email addresses are stored in this browser and included in JSON backups, so protect those files. Availability and time zones guide suggested matches, but broad categories cannot guarantee a workable meeting time. All groups need scheduling confirmation. Focus and gender preferences remain optional.</p></section>
+<section class="panel"><h2>2. Group preferences</h2><p class="hint">For each student, choose gender and whether a same-gender group is preferred or not important in the roster above. Same-gender preferences are optional and never prevent groups from being created. Students who prefer not to disclose gender can select no preference. Optional: choose two students and say whether they should be kept apart or preferably placed together. Time zones and approximate local-time availability are considered automatically; neither guarantees a meeting time. Exceptions are allowed.</p><div class="grid"><div><label for="a">First person</label><select id="a"></select><label for="b">Second person</label><select id="b"></select><label for="type">Rule</label><select id="type"><option value="no">Keep these students apart (required)</option><option value="prefer">Try to put these students together (optional)</option></select><button id="addRule" style="margin-top:12px">Add rule</button></div><div><strong>Current rules</strong><div id="rules" class="list"></div></div></div></section>
+<section class="panel"><h2>3. Create groups</h2><div class="controls"><label style="margin:0">People per group <input id="size" type="number" min="2" max="12" value="3" style="width:70px"></label><button id="generate">Create Groups</button><button class="secondary" id="again" disabled>Try Another Arrangement</button><button id="save" disabled>Keep These Groups</button></div><div class="group-help"><p><strong>Create Groups:</strong> Make a set of groups using the roster and preferences.</p><p><strong>Lock a group:</strong> Click 🔓 Lock group on any group you want to keep. Click again to unlock it.</p><p><strong>Remix Unlocked Groups:</strong> Keep locked groups unchanged and rearrange everyone else. This does not save or change previous rounds.</p><p><strong>Keep These Groups:</strong> Save the chosen arrangement to group history so future rounds can avoid repeating the same pairings.</p></div><div class="status" id="status" role="status"></div><div id="stats"></div><div class="groups" id="groups"></div><div class="controls" style="margin-top:12px"><button id="printGroups" disabled>Print / Save as PDF</button><button class="secondary" id="csv" disabled>Download groups CSV</button><button class="secondary" id="contactsCSV" disabled>Download group contacts CSV</button><button class="secondary" id="copy" disabled>Copy groups</button></div></section>
 <section class="panel"><h2>4. Previous rounds</h2><p>These are the group assignments you chose to keep. Future groups will try to pair different students together. Required “keep apart” rules always take priority.</p><div class="controls"><span id="historyCount"></span><button class="danger" id="clearHistory">Clear history</button></div><div id="history"></div></section>
 <footer>Tip: Export a backup after changes. Browser data can be lost if you clear site data or switch devices. This file works offline.</footer>
 </main><section id="printSheet" aria-hidden="true"></section><script>
@@ -37,7 +39,7 @@ const tzOptions=(value)=>'<option value="">Not set</option>'+ZONES.map(([id,name
 function utcOffset(tz){try{const parts=new Intl.DateTimeFormat('en-US',{timeZone:tz,timeZoneName:'longOffset'}).formatToParts(new Date());const str=parts.find(x=>x.type==='timeZoneName').value;const m=str.match(/GMT([+-])(\d{2}):(\d{2})/);return m?(m[1]==='-'?-1:1)*(+m[2]+(+m[3]/60)):0}catch(e){return null}}
 const offsetGap=(a,b)=>{if(!a||!b)return 0;const x=utcOffset(a),y=utcOffset(b);if(x===null||y===null)return 0;const d=Math.abs(x-y);return Math.min(d,24-d)};
 
-let state={people:[],rules:[],history:[]},current=null;
+let state={people:[],rules:[],history:[]},current=null,formPending=null;
 const $=id=>document.getElementById(id);
 const id=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
 function persist(){try{localStorage.setItem(KEY,JSON.stringify(state));savedNotice(true)}catch(e){savedNotice(false)}}
@@ -47,11 +49,12 @@ const escapeHTML=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>'
 function render(){
  $('count').textContent=state.people.length+' students';
  $('defaultTZ').innerHTML=tzOptions($('defaultTZ').value||'America/Los_Angeles');
- $('roster').innerHTML=state.people.map(p=>`<div class="person"><div style="flex:1;min-width:0"><strong>${escapeHTML(p.name)}</strong><label>Time zone<select aria-label="Time zone for ${escapeHTML(p.name)}" data-tz="${p.id}">${tzOptions(p.tz)}</select></label><label>Gender<select aria-label="Gender for ${escapeHTML(p.name)}" data-gender="${p.id}">${genderOptions(p.gender)}</select></label>${p.gender==='self'?`<label>Self-described gender<input data-self="${p.id}" value="${escapeHTML(p.genderText||'')}" placeholder="Enter gender"></label>`:''}<label>Same-gender grouping<select aria-label="Grouping preference for ${escapeHTML(p.name)}" data-grouping="${p.id}">${groupingOptions(p.grouping)}</select></label></div><button class="danger" data-remove="${p.id}">Remove</button></div>`).join('')||'<p>No names yet.</p>';
+ $('roster').innerHTML=state.people.map(p=>`<div class="person"><div style="flex:1;min-width:0"><strong>${escapeHTML(p.name)}</strong> ${(!p.email||!p.phone||!p.availability?.length||!p.focus?.length)?'<small title="Some student details are missing">⚠ Details incomplete</small>':''} <button class="secondary" type="button" data-edit="${p.id}">Edit details</button>${p.availability?.length?`<small> · ${escapeHTML(p.availability.join(', '))}</small>`:''}${p.focus?.length?`<small> · ${escapeHTML(p.focus.join(', '))}</small>`:''}<label>Time zone<select aria-label="Time zone for ${escapeHTML(p.name)}" data-tz="${p.id}">${tzOptions(p.tz)}</select></label><label>Gender<select aria-label="Gender for ${escapeHTML(p.name)}" data-gender="${p.id}">${genderOptions(p.gender)}</select></label>${p.gender==='self'?`<label>Self-described gender<input data-self="${p.id}" value="${escapeHTML(p.genderText||'')}" placeholder="Enter gender"></label>`:''}<label>Same-gender grouping<select aria-label="Grouping preference for ${escapeHTML(p.name)}" data-grouping="${p.id}">${groupingOptions(p.grouping)}</select></label></div><button class="danger" data-remove="${p.id}">Remove</button></div>`).join('')||'<p>No names yet.</p>';
  const opts='<option value="">Select a person</option>'+state.people.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
  const a=$('a').value,b=$('b').value;$('a').innerHTML=opts;$('b').innerHTML=opts;$('a').value=a;$('b').value=b;
  const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));
  $('rules').innerHTML=state.rules.map(r=>`<div class="rule"><span>${escapeHTML(names[r.a]||'?')} + ${escapeHTML(names[r.b]||'?')} — ${r.type==='no'?'🚫 cannot':'★ prefer'}</span><button class="danger" data-rule="${r.id}">×</button></div>`).join('')||'<p>No rules added.</p>';
+ $('editStudent').innerHTML='<option value="">Choose a student</option>'+state.people.map(p=>`<option value="${p.id}">${escapeHTML(p.name)}</option>`).join('');
  $('historyCount').textContent=state.history.length+' saved rounds';
  $('history').innerHTML=state.history.slice().reverse().map((h,i)=>`<div class="rule"><span>${escapeHTML(h.date)} — ${h.groups.length} groups</span><button class="secondary" data-history="${state.history.length-1-i}">View</button></div>`).join('');
 }
@@ -63,10 +66,36 @@ $('addNames').onclick=()=>{addPeople($('names').value.split(/\r?\n/));$('names')
 $('demo').onclick=()=>{if(state.people.length&&!confirm('Replace existing roster, rules, and history with example data?'))return;state={people:[],rules:[],history:[]};addPeople(Array.from({length:42},(_,i)=>'Person '+String(i+1).padStart(2,'0')));current=null;drawGroups()};
 $('roster').onchange=e=>{const t=e.target.dataset;const pid=t.tz||t.gender||t.grouping;if(!pid)return;const p=state.people.find(x=>x.id===pid);if(!p)return;if(t.tz)p.tz=e.target.value;if(t.gender)p.gender=e.target.value;if(t.grouping)p.grouping=e.target.value;persist();if(t.gender)render()};
 $('roster').oninput=e=>{const pid=e.target.dataset.self;if(!pid)return;const p=state.people.find(x=>x.id===pid);if(p){p.genderText=e.target.value;persist()}};
-$('roster').onclick=e=>{const rid=e.target.dataset.remove;if(!rid)return;state.people=state.people.filter(p=>p.id!==rid);state.rules=state.rules.filter(r=>r.a!==rid&&r.b!==rid);persist();render();current=null;drawGroups()};
+$('roster').onclick=e=>{const edit=e.target.closest('[data-edit]');if(edit){$('editStudent').value=edit.dataset.edit;loadStudentEditor();$('studentEditorPanel').scrollIntoView({behavior:'smooth',block:'start'});return}const rid=e.target.dataset.remove;if(!rid)return;state.people=state.people.filter(p=>p.id!==rid);state.rules=state.rules.filter(r=>r.a!==rid&&r.b!==rid);persist();render();current=null;drawGroups()};
 $('addRule').onclick=()=>{const a=$('a').value,b=$('b').value,type=$('type').value;if(!a||!b||a===b){alert('Choose two different people.');return}state.rules=state.rules.filter(r=>!([r.a,r.b].includes(a)&&[r.a,r.b].includes(b)));state.rules.push({id:id(),a,b,type});persist();render()};
 $('rules').onclick=e=>{const rid=e.target.dataset.rule;if(!rid)return;state.rules=state.rules.filter(r=>r.id!==rid);persist();render()};
 function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+// Interpret form categories as approximate LOCAL hours. These are estimates only.
+// Each half-hour slot is mapped to UTC day-of-week and time using today's offset.
+function approximateSlots(p){
+ const a=p.availability||[];
+ if(!a.length||a.includes('flexible')||!p.tz)return null;
+ const offset=utcOffset(p.tz);if(offset===null)return null;
+ const slots=new Set();
+ for(let day=0;day<7;day++){
+  const weekend=day===0||day===6;
+  const ranges=weekend?(a.includes('weekend')?[[9,22]]:[]):[
+   ...(a.includes('weekday-day')?[[9,17]]:[]),
+   ...(a.includes('weekday-evening')?[[17,22]]:[])
+  ];
+  for(const [start,end] of ranges)for(let half=start*2;half<end*2;half++){
+   const utc=Math.round(day*48+half-offset*2);
+   slots.add(((utc%336)+336)%336);
+  }
+ }
+ return slots;
+}
+function estimatedOverlap(a,b){
+ const x=approximateSlots(a),y=approximateSlots(b);
+ if(!x||!y)return null;
+ for(const slot of x)if(y.has(slot))return true;
+ return false;
+}
 function solve(lockedGroups=[]){
   const people=state.people,n=people.length,size=Number($('size').value);
   if(!Number.isInteger(size)||size<2||size>12)throw Error('Choose a group size between 2 and 12.');
@@ -81,24 +110,30 @@ function solve(lockedGroups=[]){
   const genderKey=p=>p.gender==='self'?(p.genderText||'').trim().toLocaleLowerCase():['woman','man','nonbinary'].includes(p.gender)?p.gender:'';
   const penalty=(a,b)=>{const x=people[a],y=people[b],gx=genderKey(x),gy=genderKey(y);
     let cost=past[a][b]*5-(preferred[a].has(b)?9:0)+offsetGap(x.tz,y.tz)*1.5;
+    if(estimatedOverlap(x,y)===false)cost+=24;
+    const f1=x.focus||[],f2=y.focus||[];
+    if(f1.length&&f2.length&&!f1.includes('stretch')&&!f2.includes('stretch')&&!f1.some(v=>f2.includes(v)))cost+=3;
     if(x.grouping==='prefer'&&(!gx||gx!==gy))cost+=7;
     if(y.grouping==='prefer'&&(!gy||gy!==gx))cost+=7;
     return cost;
   };
+  // Broad local-time availability is an estimate, not a hard constraint.
+  // Compare approximate UTC hours for weekday/weekend windows, accounting for time zones.
+  // Do not claim exact availability from these form responses.
   const allowed=(a,b)=>!forbidden[a].has(b);
   const groupCost=g=>{let cost=0;for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++)cost+=penalty(g[i],g[j]);return cost};
   const validGroup=g=>g.every((a,i)=>g.slice(i+1).every(b=>allowed(a,b)));
   const locked=lockedGroups.map(g=>g.map(id=>idx[id]));
-  if(locked.some(g=>g.length!==size||g.some(i=>i===undefined)||!validGroup(g)))throw Error('A locked group is no longer valid. Unlock it and try again.');
+  if(locked.some(g=>g.length!==size||g.some(i=>i===undefined)||!validGroup(g)))throw Error('A locked group violates a keep-apart rule or no longer matches the roster. Unlock it and try again.');
   const lockedIds=locked.flat();
   if(new Set(lockedIds).size!==lockedIds.length)throw Error('A student appears in more than one locked group.');
   const fixed=new Set(lockedIds);
   const all=Array.from({length:n},(_,i)=>i).filter(i=>!fixed.has(i));
   if(all.length%size!==0)throw Error('The unlocked students cannot be divided evenly.');
   let best=all.length===0?[]:null,bestScore=all.length===0?0:Infinity,attempts=0;
-  const deadline=performance.now()+2200;
+  const deadline=performance.now()+3500;
   // Construct complete valid arrangements first. Gender is never a hard restriction.
-  while(all.length&&attempts<350&&performance.now()<deadline){
+  while(all.length&&attempts<650&&performance.now()<deadline){
     attempts++;
     const remaining=shuffled(all),groups=[];
     let failed=false;
@@ -111,7 +146,7 @@ function solve(lockedGroups=[]){
       });
       const group=[remaining.shift()];
       while(group.length<size){
-        const choices=remaining.filter(x=>group.every(y=>allowed(x,y)));
+        const choices=remaining.filter(x=>validGroup([...group,x]));
         if(!choices.length){failed=true;break}
         const ranked=choices.map(x=>({x,cost:group.reduce((sum,y)=>sum+penalty(x,y),0)+Math.random()*(attempts%5===0?18:5)})).sort((a,b)=>a.cost-b.cost);
         const pick=ranked[Math.floor(Math.random()*Math.min(ranked.length,attempts%4===0?3:2))].x;
@@ -141,14 +176,25 @@ function solve(lockedGroups=[]){
     if(score<bestScore){best=groups.map(g=>g.slice());bestScore=score}
     if(bestScore<=-100000)break;
   }
-  if(!best)throw Error('No arrangement was found. Check the “keep apart” rules and try again. Gender preferences do not block grouping.');
+  if(!best)throw Error('No arrangement found. Check the keep-apart rules and group size, then try again. Availability is a preference, not a restriction.');
   return {groups:[...lockedGroups.map(g=>g.slice()),...shuffled(best.map(g=>shuffled(g.map(i=>ids[i]))))],score:bestScore,nodes:attempts};
 }
 
 function drawGroups(){
  const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));
- $('groups').innerHTML=current?current.groups.map((g,i)=>`<div class="group"><div class="controls" style="justify-content:space-between"><b>Group ${i+1}</b><button type="button" class="${current.locks?.includes(i)?'':'secondary'}" data-lock="${i}" ${current.saved?'disabled':''} aria-pressed="${current.locks?.includes(i)?'true':'false'}">${current.locks?.includes(i)?'🔒 Locked':'🔓 Lock group'}</button></div>${g.map(p=>`<div>${escapeHTML(names[p]||p)} <small>(${escapeHTML(tzName(tzs[p]))})</small></div>`).join('')}</div>`).join(''):'';
- $('save').disabled=!current||current.saved===true;$('again').disabled=!current||current.saved===true;$('csv').disabled=$('copy').disabled=$('printGroups').disabled=!current;
+ const peopleById=Object.fromEntries(state.people.map(p=>[p.id,p]));
+ const meetingLabel=g=>{
+   let mismatches=0,unknown=0;
+   for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){
+     const overlap=estimatedOverlap(peopleById[g[i]],peopleById[g[j]]);
+     if(overlap===false)mismatches++;else if(overlap===null)unknown++;
+   }
+   if(mismatches)return `⚠ ${mismatches} possible schedule conflict(s) — confirm times`;
+   if(unknown)return 'Scheduling needs confirmation (incomplete/flexible information)';
+   return 'Likely schedule overlap — confirm actual times';
+ };
+ $('groups').innerHTML=current?current.groups.map((g,i)=>`<div class="group"><div class="controls" style="justify-content:space-between"><b>Group ${i+1}</b><button type="button" class="${current.locks?.includes(i)?'':'secondary'}" data-lock="${i}" ${current.saved?'disabled':''} aria-pressed="${current.locks?.includes(i)?'true':'false'}">${current.locks?.includes(i)?'🔒 Locked':'🔓 Lock group'}</button></div><small>Schedule estimate: ${escapeHTML(meetingLabel(g))}</small>${g.map(p=>`<div>${escapeHTML(names[p]||p)} <small>(${escapeHTML(tzName(tzs[p]))})</small></div>`).join('')}</div>`).join(''):'';
+ $('save').disabled=!current||current.saved===true;$('again').disabled=!current||current.saved===true;$('csv').disabled=$('contactsCSV').disabled=$('copy').disabled=$('printGroups').disabled=!current;
  $('again').textContent=current&&current.locks?.length?'Remix Unlocked Groups':'Try Another Arrangement';
  $('stats').innerHTML=current?`<span class="stat">${current.groups.length} groups</span><span class="stat">${state.people.length} people</span><span class="stat">${current.repeatPairs} repeated pairings</span><span class="stat">${current.metPreferences} preferred pairings</span><span class="stat">${current.locks?.length||0} locked groups</span>`:'';
 }
@@ -161,7 +207,7 @@ function generate(preserveLocks=false){
  const result=solve(lockedGroups);const counts=new Map();
  for(const h of state.history)for(const g of h.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const k=[g[i],g[j]].sort().join('|');counts.set(k,(counts.get(k)||0)+1)}
  let repeats=0,preferred=0;for(const g of result.groups)for(let i=0;i<g.length;i++)for(let j=i+1;j<g.length;j++){const k=[g[i],g[j]].sort().join('|');if(counts.has(k))repeats++;if(state.rules.some(r=>r.type==='prefer'&&[r.a,r.b].sort().join('|')===k))preferred++}
- current={groups:result.groups,locks:lockedGroups.map((_,i)=>i),repeatPairs:repeats,metPreferences:preferred,saved:false};drawGroups();$('status').textContent=lockedGroups.length?`Remixed the unlocked groups. ${lockedGroups.length} locked group(s) stayed the same.`:'Groups are ready! Lock any groups you like, then click Remix Unlocked Groups. Click Keep These Groups when you are happy.';
+ current={groups:result.groups,locks:lockedGroups.map((_,i)=>i),repeatPairs:repeats,metPreferences:preferred,saved:false};drawGroups();$('status').textContent=lockedGroups.length?`Remixed the unlocked groups. ${lockedGroups.length} locked group(s) stayed the same.`:'Groups are ready! Confirm meeting times with each group. Lock any groups you like, then click Remix Unlocked Groups. Click Keep These Groups when you are happy.';
  }catch(e){$('status').textContent=e.message}},20);
 }
 $('generate').onclick=()=>generate(false);$('again').onclick=()=>generate(true);
@@ -179,9 +225,106 @@ $('printGroups').onclick=()=>{
  window.print();
 };
 $('csv').onclick=()=>{if(!current)return;const names=Object.fromEntries(state.people.map(p=>[p.id,p.name]));const tzs=Object.fromEntries(state.people.map(p=>[p.id,p.tz]));const rows=[['Group','Person','Time zone'],...current.groups.flatMap((g,i)=>g.map(p=>[i+1,names[p]||p,tzName(tzs[p])]))];download('group-assignments.csv',rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv')};
+function loadStudentEditor(){
+ const p=state.people.find(p=>p.id===$('editStudent').value);
+ $('editFields').classList.toggle('hide',!p);$('editStatus').textContent='';
+ if(!p)return;
+ $('editEmail').value=p.email||'';$('editPhone').value=p.phone||'';$('editTogether').value=p.together||'';
+ for(const box of $('editFocus').querySelectorAll('input'))box.checked=(p.focus||[]).includes(box.value);
+ for(const box of $('editAvailability').querySelectorAll('input'))box.checked=(p.availability||[]).includes(box.value);
+}
+$('editStudent').onchange=loadStudentEditor;
+$('saveStudent').onclick=()=>{
+ const p=state.people.find(p=>p.id===$('editStudent').value);if(!p)return;
+ p.email=$('editEmail').value.trim();p.phone=$('editPhone').value.trim();p.together=$('editTogether').value.trim();
+ p.focus=[...$('editFocus').querySelectorAll('input:checked')].map(x=>x.value);
+ p.availability=[...$('editAvailability').querySelectorAll('input:checked')].map(x=>x.value);
+ const pid=p.id;persist();render();$('editStudent').value=pid;loadStudentEditor();$('editStatus').textContent='✓ Saved';$('status').textContent='Student details saved. Generate groups again to use updated preferences.';
+};
+$('contactsCSV').onclick=()=>{
+ if(!current)return;
+ if(!confirm('This file contains student email addresses and phone numbers. Download only if you are authorized to share these details with group organizers or members. Continue?'))return;
+ const people=Object.fromEntries(state.people.map(p=>[p.id,p]));
+ const rows=[['Group','Name','Email','Phone','Time zone'],...current.groups.flatMap((g,i)=>g.map(pid=>{const p=people[pid]||{};return [i+1,p.name||pid,p.email||'',p.phone||'',tzName(p.tz)]}))];
+ const safe=x=>{let v=String(x);if(/^[\\s]*[=+@-]/.test(v))v="'"+v;return '"'+v.replace(/"/g,'""')+'"';};
+ download('group-contacts.csv',rows.map(r=>r.map(safe).join(',')).join('\\r\\n'),'text/csv');
+};
 $('export').onclick=()=>download('group-mixer-backup.json',JSON.stringify(state,null,2),'application/json');
 $('backupTop').onclick=()=>$('export').click();
 $('import').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const s=JSON.parse(await f.text());if(!Array.isArray(s.people)||!Array.isArray(s.rules)||!Array.isArray(s.history)||!s.people.every(p=>typeof p.id==='string'&&typeof p.name==='string'))throw Error('Invalid backup');if(!confirm('Replace current roster, rules, and history with this backup?'))return;state=s;current=null;persist();render();drawGroups()}catch(err){alert('Could not import: '+err.message)}e.target.value=''};
+// Google Forms CSV import. All processing stays in this browser.
+function parseCSV(text){
+ const rows=[],row=[];let cell='',quoted=false;
+ text=text.replace(/^\uFEFF/,'');
+ for(let i=0;i<text.length;i++){
+  const c=text[i];
+  if(quoted){if(c==='"'&&text[i+1]==='"'){cell+='"';i++}else if(c==='"')quoted=false;else cell+=c}
+  else if(c==='"'&&!cell)quoted=true;
+  else if(c===','){row.push(cell);cell=''}
+  else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(v=>v.trim()))rows.push(row.slice());row.length=0;cell=''}
+  else cell+=c;
+ }
+ if(quoted)throw Error('CSV contains an unclosed quotation mark.');
+ row.push(cell);if(row.some(v=>v.trim()))rows.push(row);
+ return rows;
+}
+function colIndex(headers,parts){return headers.findIndex(h=>parts.some(x=>h.toLowerCase().includes(x)))}
+function splitSelections(s){return String(s||'').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean)}
+function parseZone(value){
+ const v=String(value||'').trim().toLowerCase();if(!v)return '';
+ if(ZONES.some(z=>z[0].toLowerCase()===v))return ZONES.find(z=>z[0].toLowerCase()===v)[0];
+ const aliases=[[/\bpacific\b|\bpst\b|\bpdt\b/,'America/Los_Angeles'],[/\bmountain\b|\bmdt\b|\bmst\b/,'America/Denver'],[/\barizona\b/,'America/Phoenix'],[/\bcentral\b|\bcst\b|\bcdt\b/,'America/Chicago'],[/\beastern\b|\best\b|\bedt\b/,'America/New_York'],[/\balaska\b/,'America/Anchorage'],[/\bhawaii\b/,'Pacific/Honolulu'],[/\batlantic\b/,'America/Halifax'],[/\buk\b|\blondon\b|\bbst\b|\bgmt\b/,'Europe/London'],[/\bindia\b|\bist\b/,'Asia/Kolkata'],[/\bsydney\b/,'Australia/Sydney'],[/\bnew zealand\b/,'Pacific/Auckland']];
+ return aliases.find(([re])=>re.test(v))?.[1]||ZONES.find(z=>z[1].toLowerCase()===v)?.[0]||'';
+}
+function parseAvailability(v){const t=String(v||'').toLowerCase(),a=[];
+ if(/week\s*day in the day|weekday daytime|weekday day/.test(t))a.push('weekday-day');
+ if(/week\s*day in the evening|weekday evening/.test(t))a.push('weekday-evening');
+ if(/weekend/.test(t))a.push('weekend');
+ if(/flexible/.test(t))a.push('flexible');return a;
+}
+function parseFocus(v){const t=String(v||'').toLowerCase(),a=[];
+ if(/heart|application/.test(t))a.push('heart');if(/theology|head focus/.test(t))a.push('theology');
+ if(/stretched|receive input/.test(t))a.push('stretch');return a;
+}
+function prepareForm(text){
+ const rows=parseCSV(text);if(rows.length<2)throw Error('The CSV has no student responses.');
+ const headers=rows[0].map(h=>h.trim());
+ const fields={name:colIndex(headers,['name']),email:colIndex(headers,['email']),phone:colIndex(headers,['mobile','phone']),together:colIndex(headers,['already in a core group','connection you are eager','retain']),focus:colIndex(headers,['what sort of core group']),availability:colIndex(headers,['when are you available']),zone:colIndex(headers,['time zone'])};
+ if(fields.name<0)throw Error('Could not find a Name column. Check that you exported the Google Form responses sheet.');
+ const records=rows.slice(1).map(r=>{const get=k=>fields[k]<0?'':(r[fields[k]]||'').trim();
+ const focusRaw=get('focus');return {name:get('name'),email:get('email'),phone:get('phone'),together:get('together'),focus:parseFocus(focusRaw),availability:parseAvailability(get('availability')),tz:parseZone(get('zone')),rawTZ:get('zone'),sameGender:/single gender/i.test(focusRaw)};
+ }).filter(r=>r.name);
+ const dedup=new Map();for(const r of records)dedup.set((r.email||r.name).toLowerCase(),r);
+ return {records:[...dedup.values()],headers,fields};
+}
+$('previewForm').onclick=async()=>{
+ const f=$('formCSV').files[0];if(!f){$('formPreview').textContent='Choose a CSV file first.';return}
+ try{formPending=prepareForm(await f.text());const rs=formPending.records;
+  const unknown=rs.filter(r=>r.rawTZ&&!r.tz).length;
+  $('formPreview').textContent=`Ready to import ${rs.length} students. ${rs.filter(r=>r.tz).length} recognized time zones, ${rs.filter(r=>r.availability.length).length} availability responses, ${rs.filter(r=>r.focus.length).length} focus responses, ${rs.filter(r=>r.sameGender).length} single-gender requests.${unknown?' '+unknown+' time-zone answers need manual review.':''} Existing rules and history will stay intact.`;
+  $('applyForm').disabled=!rs.length;
+ }catch(e){formPending=null;$('applyForm').disabled=true;$('formPreview').textContent='Import error: '+e.message}
+};
+$('formCSV').onchange=()=>{formPending=null;$('applyForm').disabled=true;$('formPreview').textContent='Click Preview import to check this file.'};
+$('applyForm').onclick=()=>{
+ if(!formPending)return;
+ const rs=formPending.records;
+ if(!confirm(`Import ${rs.length} Google Form responses? Existing students will be updated where matched; other students, saved history and rules will remain.`))return;
+ let added=0,updated=0;const requests=[];
+ for(const r of rs){let p=state.people.find(p=>(r.email&&p.email&&p.email.toLowerCase()===r.email.toLowerCase())||p.name.trim().toLowerCase()===r.name.toLowerCase());
+  if(!p){p={id:id(),name:r.name,tz:'',gender:'',grouping:'none'};state.people.push(p);added++}else updated++;
+  if(r.email)p.email=r.email;if(r.phone)p.phone=r.phone;if(r.tz)p.tz=r.tz;
+  p.availability=r.availability;p.focus=r.focus;
+  if(r.sameGender)p.grouping='prefer';
+  if(r.together){p.together=r.together;requests.push({name:r.name,together:r.together});}
+ }
+ // Names entered in the free-text connection field are not automatically converted
+ // into pairwise rules: ambiguous or misspelled names require human review.
+ persist();current=null;render();drawGroups();
+ $('formPreview').textContent=`Imported: ${added} new, ${updated} updated. ${requests.length} responses mention preferred connections; review these manually in Group preferences: `+requests.map(x=>x.name+': '+x.together).join(' | ');
+ $('status').textContent='Google Form import complete. Review preferences and create groups.';
+ $('applyForm').disabled=true;formPending=null;
+};
 render();
 try{if(localStorage.getItem(KEY))savedNotice(true)}catch(e){savedNotice(false)}
 </script></body></html>
